@@ -151,7 +151,7 @@ jobs:
   docker-build:
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
-    needs: ["prepare-env", "logic-check", "docker-security"]
+    needs: ["prepare-env", "logic-check"]
     permissions:
       contents: write
       packages: write
