@@ -112,7 +112,7 @@ jobs:
         with:
           context: .
           push: false
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           # we're building the container before the scan, use the short sha tag
           # for referring to it later
           tags: ${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
@@ -197,6 +197,7 @@ jobs:
           # built.
           no-cache: true
           platforms: linux/amd64
+          provenance: false
           # Only push if the head and base repos match, meaning it is not a fork
           push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -222,6 +223,7 @@ jobs:
           # built.
           no-cache: true
           platforms: linux/amd64,linux/arm64
+          provenance: false
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
