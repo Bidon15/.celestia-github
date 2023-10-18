@@ -144,6 +144,13 @@ jobs:
     permissions:
       contents: write
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - darwin/arm64
 
     steps:
       - name: Checkout
@@ -203,11 +210,7 @@ jobs:
           # the same commit from a PR and on main causing incorrect images being
           # built.
           no-cache: true
-          platforms: |
-            - linux/amd64
-            - linux/arm64
-            - darwin/arm64
-            - darwin/amd64
+          platforms: ${{ matrix.platform }}
           provenance: false
           push: true
           tags: ${{ steps.meta.outputs.tags }}
