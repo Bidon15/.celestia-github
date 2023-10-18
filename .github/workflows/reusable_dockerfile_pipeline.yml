@@ -190,6 +190,9 @@ jobs:
             type=ref,enable=true,prefix=pr-,suffix=,event=pr
           # yamllint enable
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
