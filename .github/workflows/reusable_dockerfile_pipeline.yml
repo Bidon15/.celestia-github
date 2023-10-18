@@ -15,7 +15,7 @@ on:
         default: "${{ github.repository }}"
 
 env:
-  REGISTRY: ghcr.io
+  GITHUB_REG: ghcr.io
   MAINTAINER: ${{ github.repository_owner }}
   DESCRIPTION: "${{ github.repository_owner }} repository ${{ github.repository }}"
 
@@ -152,7 +152,7 @@ jobs:
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -163,12 +163,12 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}
+          images: ${{ env.GITHUB_REG }}/${{ env.OUTPUT_IMAGE_NAME }}
           # yamllint disable
           labels: |
             maintainer=${{ env.MAINTAINER }}
             commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
+            dockerPull=docker pull ${{ env.GITHUB_REG }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
             org.opencontainers.image.description=${{ env.DESCRIPTION }}
           tags: |
             # output minimal (short sha)
@@ -253,12 +253,12 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}
+          images: ${{ env.OUTPUT_IMAGE_NAME }}
           # yamllint disable
           labels: |
             maintainer=${{ env.MAINTAINER }}
             commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
+            dockerPull=docker pull ${{ env.GITHUB_REG }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
             org.opencontainers.image.description=${{ env.DESCRIPTION }}
           tags: |
             # output minimal (short sha)
@@ -349,12 +349,12 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}
+          images: ${{ env.OUTPUT_IMAGE_NAME }}
           # yamllint disable
           labels: |
             maintainer=${{ env.MAINTAINER }}
             commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
+            dockerPull=docker pull ${{ env.GITHUB_REG }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
             org.opencontainers.image.description=${{ env.DESCRIPTION }}
           tags: |
             # output minimal (short sha)
