@@ -202,8 +202,7 @@ jobs:
           # We don't use the cache to reduce complexity. We've seen issues of
           # the same commit from a PR and on main causing incorrect images being
           # built.
-          no-cache: true
-          platforms: linux/amd64,linux/arm64,darwin/arm64
+          platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
           tags: ${{ steps.meta.outputs.tags }}
