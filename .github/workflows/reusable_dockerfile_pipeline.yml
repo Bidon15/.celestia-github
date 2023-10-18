@@ -246,11 +246,101 @@ jobs:
       - name: Checkout
         uses: "actions/checkout@v4"
 
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.OUTPUT_IMAGE_NAME }}
+          # yamllint disable
+          labels: |
+            maintainer=${{ env.MAINTAINER }}
+            commitUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+            dockerPull=docker pull ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.OUTPUT_SHORT_SHA }}
+            org.opencontainers.image.description=${{ env.DESCRIPTION }}
+          tags: |
+            # output minimal (short sha)
+            type=raw,value={{sha}}
+            # output v0.2.1/v*-* (or sha of no tag)
+            type=semver,pattern={{raw}}
+            # pull request event
+            type=ref,enable=true,prefix=pr-,suffix=,event=pr
+          # yamllint enable
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
+          registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # Build and Publish images on main, master, and versioned branches.
+      #
+      # The reason we split out these steps into 2 is for better handling of
+      # forks when building amd64 images and to enable faster availability of
+      # the amd64 image since building the arm64 image takes significantly
+      # longer.
+      - name: "Merge on Main Trigger: Build and Push All Docker Images"
+        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' }}
+        uses: docker/build-push-action@v5
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
+          platforms: linux/arm64,linux/amd64
+          provenance: false
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
+
+      # Build amd64 images always, and publish when it is not a fork. The Github
+      # security model prevents forks from pushing to the registry so we can
+      # only push if the branch/PR is not generated from a fork. Even though
+      # forks can't push, we still want to try and build the image to catch
+      # bugs. For testing purposes we only need an amd64 image.
+      - name: "Pull Request Trigger: Build and Push amd64 Docker Image"
+        if: ${{ needs.prepare-env.outputs.build_for_pr == 'true' }}
+        uses: docker/build-push-action@v5
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
+          no-cache: true
+          platforms: linux/amd64
+          provenance: false
+          # Only push if the head and base repos match, meaning it is not a fork
+          push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
+
+  docker-build-scw-hub:
+    runs-on: "ubuntu-latest"
+    # wait until the jobs are finished.
+    needs: ["prepare-env", "logic-check"]
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v4"
 
       - name: Extract Docker Metadata
         id: meta
@@ -281,6 +371,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Login to Scaleway
+        uses: docker/login-action@v3
+        with:
+          registry: rg.fr-par.scw.cloud/celestia-node
+          username: ${{ secrets.SCALEWAY_USERNAME }}
+          password: ${{ secrets.SCW_SECRET_KEY }}
       # Build and Publish images on main, master, and versioned branches.
       #
       # The reason we split out these steps into 2 is for better handling of
