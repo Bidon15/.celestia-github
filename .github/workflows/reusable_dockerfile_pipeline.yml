@@ -101,19 +101,8 @@ jobs:
     needs: ["prepare-env", "logic-check"]
     runs-on: "ubuntu-latest"
     steps:
-      - name: Free Disk space
-        shell: bash
-        run: |
-          sudo rm -rf /usr/local/lib/android  # will release about 10 GB if you don't need Android
-          sudo rm -rf /usr/share/dotnet # will release about 20GB if you don't need .NET
       - name: Checkout
         uses: "actions/checkout@v4"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Docker Buildx
-        run: docker buildx inspect --bootstrap
 
       - name: Build and Push
         uses: docker/build-push-action@v5
@@ -126,7 +115,7 @@ jobs:
           no-cache: true
           load: true
           verbose: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           # we're building the container before the scan, use the short sha tag
           # for referring to it later
           tags: ${{ env.OUTPUT_IMAGE_NAME }}:${{ env.OUTPUT_SHORT_SHA }}
@@ -196,6 +185,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Build and Publish images on main, master, and versioned branches.
+      #
+      # The reason we split out these steps into 2 is for better handling of
+      # forks when building amd64 images and to enable faster availability of
+      # the amd64 image since building the arm64 image takes significantly
+      # longer.
+      - name: "Merge on Main Trigger: Build and Push All Docker Images"
+        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' }}
+        uses: docker/build-push-action@v5
+        env:
+          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
+          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
+        with:
+          context: .
+          # We don't use the cache to reduce complexity. We've seen issues of
+          # the same commit from a PR and on main causing incorrect images being
+          # built.
+          no-cache: true
+          platforms: |
+            - linux/amd64
+            - linux/arm64
+            - darwin/arm64
+            - darwin/amd64
+          provenance: false
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ inputs.dockerfile }}
+
       # Build amd64 images always, and publish when it is not a fork. The Github
       # security model prevents forks from pushing to the registry so we can
       # only push if the branch/PR is not generated from a fork. Even though
@@ -217,31 +235,6 @@ jobs:
           provenance: false
           # Only push if the head and base repos match, meaning it is not a fork
           push: ${{ needs.prepare-env.outputs.not_a_fork == 'true' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: ${{ inputs.dockerfile }}
-
-      # Build and Publish images on main, master, and versioned branches.
-      #
-      # The reason we split out these steps into 2 is for better handling of
-      # forks when building amd64 images and to enable faster availability of
-      # the amd64 image since building the arm64 image takes significantly
-      # longer.
-      - name: "Merge on Main Trigger: Build and Push All Docker Images"
-        if: ${{ needs.prepare-env.outputs.build_for_merge == 'true' }}
-        uses: docker/build-push-action@v5
-        env:
-          OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
-          OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
-        with:
-          context: .
-          # We don't use the cache to reduce complexity. We've seen issues of
-          # the same commit from a PR and on main causing incorrect images being
-          # built.
-          no-cache: true
-          platforms: linux/amd64,linux/arm64
-          provenance: false
-          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
