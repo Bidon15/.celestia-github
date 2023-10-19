@@ -51,8 +51,8 @@ jobs:
               echo "------------------------------------------------------------"
               exit 1
             fi
-            echo "IMAGE_NAME=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-            echo "image_name=$(echo ${{ github.repository_owner }}/${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+            echo "IMAGE_NAME=$(echo ${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            echo "image_name=$(echo ${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
           fi
           # yamllint enable
 
