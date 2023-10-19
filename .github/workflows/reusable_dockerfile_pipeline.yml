@@ -138,7 +138,7 @@ jobs:
           severity: "CRITICAL,HIGH"
 
   docker-build:
-    name: docker-build (${{ matrix.registry.name }}/${{ matrix.registry.image-path }}:${{ needs.prepare-env.outputs.output_short_sha }})
+    name: docker-build (${{ matrix.registry.name }}/ ${{ matrix.registry.image-path }}:${{ needs.prepare-env.outputs.output_short_sha }})
     runs-on: "ubuntu-latest"
     # wait until the jobs are finished.
     needs: ["prepare-env", "logic-check"]
@@ -179,7 +179,7 @@ jobs:
           OUTPUT_SHORT_SHA: ${{ needs.prepare-env.outputs.output_short_sha }}
           OUTPUT_IMAGE_NAME: ${{ needs.prepare-env.outputs.output_image_name }}
         with:
-          images: ${{ env.GITHUB_REG }}/${{ env.OUTPUT_IMAGE_NAME }}
+          images: ${{ env.OUTPUT_IMAGE_NAME }}
           # yamllint disable
           labels: |
             maintainer=${{ env.MAINTAINER }}
