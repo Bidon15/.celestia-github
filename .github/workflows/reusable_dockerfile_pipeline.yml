@@ -148,16 +148,16 @@ jobs:
       matrix:
         registry:
           - name: docker.io
-            user-secret: ${{ secrets.DOCKERHUB_USERNAME }}
-            token-secret: ${{ secrets.DOCKERHUB_TOKEN }}
+            user-secret: DOCKERHUB_USERNAME
+            token-secret: DOCKERHUB_TOKEN
             image-path: vietcelestia/celestia-node
           - name: ghcr.io
             user-secret: ${{ github.repository_owner }}
-            token-secret: ${{ secrets.GITHUB_TOKEN }}
+            token-secret: GITHUB_TOKEN
             image-path: ${{ github.repository_owner }}/${{ needs.prepare-env.outputs.output_image_name }}
           - name: rg.fr-par.scw.cloud/celestia-node
-            user-secret: ${{ secrets.SCALEWAY_USERNAME }}
-            token-secret: ${{ secrets.SCW_SECRET_KEY }}
+            user-secret: SCALEWAY_USERNAME
+            token-secret: SCW_SECRET_KEY
             image-path: rg.fr-par.scw.cloud/celestia-node
 
     steps:
