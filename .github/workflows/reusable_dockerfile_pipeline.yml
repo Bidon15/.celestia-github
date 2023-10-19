@@ -36,20 +36,20 @@ jobs:
         id: setting_env
         run: |
           # Extract both the repository owner and repository name
-            REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}')
+            REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}' | tr '[:upper:]' '[:lower:]')
             REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
-          
+
             # We are not using repository owner, but you can use it if you want.
             echo "Repository Owner: $REPO_OWNER"
             echo "Repository Name: $REPO_NAME"
-            
+
             echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
             echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
             # yamllint disable
-            
+
             echo "IMAGE_NAME=$REPO_NAME" >> $GITHUB_ENV
             echo "image_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
-            
+
             # here we validate if we have specified a different package name in
             # the inputs, if so, we change the package to it.
             if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
@@ -62,6 +62,7 @@ jobs:
                 exit 1
               fi
               PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+              echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
               echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
               echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
             fi
@@ -166,7 +167,7 @@ jobs:
           - name: ghcr.io
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
-            image-path: ${{ github.repository_owner }}/${{ needs.prepare-env.outputs.output_image_name }}
+            image-path: ${{ env.REPO_OWNER }}/${{ needs.prepare-env.outputs.output_image_name }}
           - name: rg.fr-par.scw.cloud/celestia-node
             user-secret: SCALEWAY_USERNAME
             token-secret: SCW_SECRET_KEY
