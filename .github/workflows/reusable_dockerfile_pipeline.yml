@@ -163,7 +163,7 @@ jobs:
     strategy:
       matrix:
         registry:
-          - name: Docker Hub
+          - name: DockerHub
             user-secret: DOCKERHUB_USERNAME
             token-secret: DOCKERHUB_TOKEN
             registry-url: docker.io
