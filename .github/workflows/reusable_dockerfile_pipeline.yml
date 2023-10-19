@@ -23,6 +23,7 @@ jobs:
   prepare-env:
     runs-on: "ubuntu-latest"
     outputs:
+      repo_owner: ${{ steps.setting_env.outputs.repo_owner }}
       output_short_sha: ${{ steps.setting_env.outputs.short_sha }}
       output_image_name: ${{ steps.setting_env.outputs.image_name }}
       build_for_pr: ${{ steps.setting_logic.outputs.build_for_pr }}
@@ -63,8 +64,10 @@ jobs:
               fi
               PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
               echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+              echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
               echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
               echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
+              
             fi
           # yamllint enable
 
@@ -167,7 +170,7 @@ jobs:
           - name: ghcr.io
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
-            image-path: ${{ env.REPO_OWNER }}/${{ needs.prepare-env.outputs.output_image_name }}
+            image-path: ${{ needs.prepare-env.outputs.repo_owner }}/${{ needs.prepare-env.outputs.output_image_name }}
           - name: rg.fr-par.scw.cloud/celestia-node
             user-secret: SCALEWAY_USERNAME
             token-secret: SCW_SECRET_KEY
