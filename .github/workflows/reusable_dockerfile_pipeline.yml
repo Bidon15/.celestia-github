@@ -170,7 +170,7 @@ jobs:
           - name: ghcr.io
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
-            image-path: ${{ needs.prepare-env.outputs.repo_owner }}/${{ needs.prepare-env.outputs.output_image_name }}
+            image-path: ghcr.io/${{ needs.prepare-env.outputs.repo_owner }}/${{ needs.prepare-env.outputs.output_image_name }}
           - name: rg.fr-par.scw.cloud/celestia-node
             user-secret: SCALEWAY_USERNAME
             token-secret: SCW_SECRET_KEY
