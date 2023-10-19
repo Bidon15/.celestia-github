@@ -35,25 +35,36 @@ jobs:
       - name: Add vars to ENV
         id: setting_env
         run: |
-          echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
-          echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
-          # yamllint disable
-          echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          echo "image_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-          # here we validate if we have specified a different package name in
-          # the inputs, if so, we change the package to it.
-          if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
+          # Extract both the repository owner and repository name
+            REPO_OWNER=$(echo "${{ github.repository }}" | awk -F'/' '{print $1}')
+            REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]')
+          
+            # We are not using repository owner, but you can use it if you want.
+            echo "Repository Owner: $REPO_OWNER"
+            echo "Repository Name: $REPO_NAME"
+            
+            echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+            echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> "$GITHUB_OUTPUT"
+            # yamllint disable
+            
+            echo "IMAGE_NAME=$REPO_NAME" >> $GITHUB_ENV
+            echo "image_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
+            
+            # here we validate if we have specified a different package name in
+            # the inputs, if so, we change the package to it.
+            if [[ ${{ inputs.packageName }} != ${{ github.repository}} ]];then
             # validate the input package name characters
-            if [[ ! "${{ inputs.packageName }}" =~ ^[A-Za-z0-9\-]+$ ]]; then
-              echo "------------------------------------------------------------"
-              echo "ERROR: Package name not valid! => [ ${{ inputs.packageName }} ]"
-              echo "ONLY can use: A-Za-z0-9\-"
-              echo "------------------------------------------------------------"
-              exit 1
+              if [[ ! "${{ inputs.packageName }}" =~ ^[A-Za-z0-9\-]+$ ]]; then
+                echo "------------------------------------------------------------"
+                echo "ERROR: Package name not valid! => [ ${{ inputs.packageName }} ]"
+                echo "ONLY can use: A-Za-z0-9\-"
+                echo "------------------------------------------------------------"
+                exit 1
+              fi
+              PACKAGE_NAME=$(echo "${{ inputs.packageName }}" | tr '[:upper:]' '[:lower:]')
+              echo "IMAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+              echo "image_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
             fi
-            echo "IMAGE_NAME=$(echo ${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-            echo "image_name=$(echo ${{ inputs.packageName }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-          fi
           # yamllint enable
 
       # The key logic that we want to determine is whether or not we are working
