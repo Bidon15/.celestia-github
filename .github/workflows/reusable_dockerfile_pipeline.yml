@@ -301,7 +301,7 @@ jobs:
           platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
-          tags: vietcelestia/celestia-node:v0.11.0-test
+          tags: vietcelestia/celestia-node:${{ needs.prepare-env.outputs.output_short_sha }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
 
@@ -397,7 +397,7 @@ jobs:
           platforms: linux/arm64,linux/amd64
           provenance: false
           push: true
-          tags: rg.fr-par.scw.cloud/celestia-node:v0.11.0-test
+          tags: rg.fr-par.scw.cloud/celestia-node/celestia-node:${{ needs.prepare-env.outputs.output_short_sha }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ${{ inputs.dockerfile }}
 
