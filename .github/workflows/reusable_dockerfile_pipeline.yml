@@ -151,7 +151,7 @@ jobs:
           - name: docker.io
             user-secret: DOCKERHUB_USERNAME
             token-secret: DOCKERHUB_TOKEN
-            image-path: vietcelestia/celestia-node
+            image-path: vietcelestia/${{ needs.prepare-env.outputs.output_image_name }}
           - name: ghcr.io
             user-secret: ${{ github.repository_owner }}
             token-secret: GITHUB_TOKEN
@@ -159,7 +159,7 @@ jobs:
           - name: rg.fr-par.scw.cloud/celestia-node
             user-secret: SCALEWAY_USERNAME
             token-secret: SCW_SECRET_KEY
-            image-path: rg.fr-par.scw.cloud/celestia-node
+            image-path: rg.fr-par.scw.cloud/celestia-node/${{ needs.prepare-env.outputs.output_image_name }}
       fail-fast: false
     steps:
       - name: Checkout
